@@ -4,9 +4,11 @@ def is_variable(x):
 
 def unify(x, y, subst):
     """Unify two terms x and y under a given substitution subst."""
+    print(f"Comparing: {x} with {y}")
     if subst is None:
         return None
     elif x == y:
+        print(f"Both are equal: {x} == {y}")
         return subst
     elif is_variable(x):
         return unify_variable(x, y, subst)
@@ -19,15 +21,19 @@ def unify(x, y, subst):
                 return None
         return subst
     else:
+        print(f"Cannot unify {x} and {y}")
         return None
 
 def unify_variable(var, x, subst):
     """Handle variable unification."""
     if var in subst:
+        print(f"Variable {var} is already in substitution. Resolving with {subst[var]}.")
         return unify(subst[var], x, subst)
     elif occurs_check(var, x, subst):
-        return None # Avoid infinite loops in recursive substitutions
+        print(f"Occurs check failed: {var} occurs in {x}.")
+        return None  # Avoid infinite loops in recursive substitutions
     else:
+        print(f"Adding substitution: {var} -> {x}")
         new_subst = subst.copy()
         new_subst[var] = x
         return new_subst
@@ -43,32 +49,48 @@ def occurs_check(var, x, subst):
     else:
         return False
 
-def unification(expr1, expr2):
-    """Perform unification on two expressions."""
-    substitution = unify(expr1, expr2, {})
-    return substitution
+def parse_sentence_to_expression(sentence):
+    """Convert an English sentence to a logical expression."""
+    sentence = sentence.strip().replace("(", " ( ").replace(")", " ) ").replace(",", " , ")
+    tokens = sentence.split()
+    stack = []
+    current = []
 
-def parse_expression(expr):
-    """Parse user input to convert into a tuple or string."""
-    try:
-        return eval(expr)
-    except Exception as e:
-        print(f"Invalid input: {e}")
-        return None
+    for token in tokens:
+        if token == "(":
+            stack.append(current)
+            current = []
+        elif token == ")":
+            if stack:
+                last = stack.pop()
+                last.append(tuple(current))
+                current = last
+        elif token == ",":
+            continue
+        else:
+            current.append(token)
+
+    return tuple(current) if len(current) == 1 else tuple(current)
+
+def unification_with_explanation(expr1, expr2):
+    """Perform unification on two expressions with step-by-step explanation."""
+    print("\nStarting Unification Process...\n")
+    subst = unify(expr1, expr2, {})
+    if subst is not None:
+        print("\nUnification Successful!")
+        print("Substitution:", subst)
+    else:
+        print("\nUnification Failed!")
 
 # Input from the user
-expr1_input = input("Enter the first expression (e.g., ('f', 'x', ('g', 'y'))): ")
-expr2_input = input("Enter the second expression (e.g., ('f', 'a', ('g', 'b'))): ")
+print("Enter the logical expressions in English-like format.")
+print("Example: Eats(x, Apple)")
+sentence1 = input("Enter the first expression: ")
+sentence2 = input("Enter the second expression: ")
 
-expr1 = parse_expression(expr1_input)
-expr2 = parse_expression(expr2_input)
+# Parse sentences
+expr1 = parse_sentence_to_expression(sentence1)
+expr2 = parse_sentence_to_expression(sentence2)
 
-if expr1 is not None and expr2 is not None:
-    result = unification(expr1, expr2)
-
-    if result is None:
-        print("The expressions cannot be unified.")
-    else:
-        print("Unified with substitution:", result)
-else:
-    print("Failed to parse one or both expressions.")
+# Perform unification with explanation
+unification_with_explanation(expr1, expr2)
