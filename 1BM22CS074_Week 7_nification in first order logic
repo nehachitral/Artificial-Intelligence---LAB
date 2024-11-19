@@ -1,0 +1,74 @@
+def is_variable(x):
+    """Check if x is a variable."""
+    return isinstance(x, str) and x[0].islower()
+
+def unify(x, y, subst):
+    """Unify two terms x and y under a given substitution subst."""
+    if subst is None:
+        return None
+    elif x == y:
+        return subst
+    elif is_variable(x):
+        return unify_variable(x, y, subst)
+    elif is_variable(y):
+        return unify_variable(y, x, subst)
+    elif isinstance(x, tuple) and isinstance(y, tuple) and len(x) == len(y):
+        for xi, yi in zip(x, y):
+            subst = unify(xi, yi, subst)
+            if subst is None:
+                return None
+        return subst
+    else:
+        return None
+
+def unify_variable(var, x, subst):
+    """Handle variable unification."""
+    if var in subst:
+        return unify(subst[var], x, subst)
+    elif occurs_check(var, x, subst):
+        return None # Avoid infinite loops in recursive substitutions
+    else:
+        new_subst = subst.copy()
+        new_subst[var] = x
+        return new_subst
+
+def occurs_check(var, x, subst):
+    """Check if var occurs in x to avoid infinite substitution."""
+    if var == x:
+        return True
+    elif isinstance(x, tuple):
+        return any(occurs_check(var, xi, subst) for xi in x)
+    elif is_variable(x) and x in subst:
+        return occurs_check(var, subst[x], subst)
+    else:
+        return False
+
+def unification(expr1, expr2):
+    """Perform unification on two expressions."""
+    substitution = unify(expr1, expr2, {})
+    return substitution
+
+def parse_expression(expr):
+    """Parse user input to convert into a tuple or string."""
+    try:
+        return eval(expr)
+    except Exception as e:
+        print(f"Invalid input: {e}")
+        return None
+
+# Input from the user
+expr1_input = input("Enter the first expression (e.g., ('f', 'x', ('g', 'y'))): ")
+expr2_input = input("Enter the second expression (e.g., ('f', 'a', ('g', 'b'))): ")
+
+expr1 = parse_expression(expr1_input)
+expr2 = parse_expression(expr2_input)
+
+if expr1 is not None and expr2 is not None:
+    result = unification(expr1, expr2)
+
+    if result is None:
+        print("The expressions cannot be unified.")
+    else:
+        print("Unified with substitution:", result)
+else:
+    print("Failed to parse one or both expressions.")
