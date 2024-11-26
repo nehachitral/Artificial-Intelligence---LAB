@@ -2,6 +2,7 @@ def is_variable(x):
     """Check if x is a variable."""
     return isinstance(x, str) and x[0].islower()
 
+
 def unify(x, y, subst):
     """Unify two terms x and y under a given substitution subst."""
     print(f"Comparing: {x} with {y}")
@@ -24,6 +25,7 @@ def unify(x, y, subst):
         print(f"Cannot unify {x} and {y}")
         return None
 
+
 def unify_variable(var, x, subst):
     """Handle variable unification."""
     if var in subst:
@@ -38,6 +40,7 @@ def unify_variable(var, x, subst):
         new_subst[var] = x
         return new_subst
 
+
 def occurs_check(var, x, subst):
     """Check if var occurs in x to avoid infinite substitution."""
     if var == x:
@@ -49,12 +52,14 @@ def occurs_check(var, x, subst):
     else:
         return False
 
+
 def parse_sentence_to_expression(sentence):
     """Convert an English sentence to a logical expression."""
     sentence = sentence.strip().replace("(", " ( ").replace(")", " ) ").replace(",", " , ")
     tokens = sentence.split()
     stack = []
     current = []
+
 
     for token in tokens:
         if token == "(":
@@ -70,7 +75,9 @@ def parse_sentence_to_expression(sentence):
         else:
             current.append(token)
 
+
     return tuple(current) if len(current) == 1 else tuple(current)
+
 
 def unification_with_explanation(expr1, expr2):
     """Perform unification on two expressions with step-by-step explanation."""
@@ -82,15 +89,20 @@ def unification_with_explanation(expr1, expr2):
     else:
         print("\nUnification Failed!")
 
+
 # Input from the user
 print("Enter the logical expressions in English-like format.")
 print("Example: Eats(x, Apple)")
 sentence1 = input("Enter the first expression: ")
 sentence2 = input("Enter the second expression: ")
 
+
 # Parse sentences
 expr1 = parse_sentence_to_expression(sentence1)
 expr2 = parse_sentence_to_expression(sentence2)
 
+
 # Perform unification with explanation
 unification_with_explanation(expr1, expr2)
+
+
